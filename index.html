@@ -407,16 +407,7 @@
             <div class="stat-title">Evening Present</div>
             <div class="stat-value" id="evening-present">0</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-title">Total Present in Morning</div>
-            <div class="stat-value" id="total-presentM">0</div>
-          </div>
-        </div>
-         <div class="stat-card">
-            <div class="stat-title">Total Present in Evening</div>
-            <div class="stat-value" id="total-presentE">0</div>
-          </div>
-        </div>
+         
         <div class="controls" style="justify-content: center; margin-top: 20px;">
           <button class="large-button save" onclick="saveAttendance()">
             <i class="fas fa-save"></i> Save Attendance
@@ -625,8 +616,6 @@
       document.getElementById('total-students').textContent = total;
       document.getElementById('morning-present').textContent = morningPresent;
       document.getElementById('evening-present').textContent = eveningPresent;
-      document.getElementById('total-presentM').textContent = totalPresentM;
-      document.getElementById('total-presentE').textContent = totalPresentE;
     }
     
     function setToday() {
