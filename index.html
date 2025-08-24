@@ -17,9 +17,7 @@
       background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
       color: #333;
       min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
+      padding: 15px;
     }
     
     .container {
@@ -29,13 +27,12 @@
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       overflow: hidden;
-      flex: 1;
     }
     
     header {
       background: #1a2a6c;
       color: white;
-      padding: 20px;
+      padding: 20px 15px;
       text-align: center;
       position: relative;
     }
@@ -57,30 +54,30 @@
     }
     
     h1 {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       margin-bottom: 10px;
-      padding: 0 100px;
+      padding: 0 80px 0 0;
     }
     
     .app-description {
-      font-size: 1.1rem;
+      font-size: 1rem;
       opacity: 0.9;
     }
     
     .content {
-      padding: 25px;
+      padding: 20px;
     }
     
     .card {
       background: #f9f9f9;
       border-radius: 10px;
-      padding: 20px;
+      padding: 15px;
       margin-bottom: 20px;
       border-left: 5px solid #1a2a6c;
     }
     
     .card-title {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       color: #1a2a6c;
       margin-bottom: 15px;
       padding-bottom: 10px;
@@ -91,8 +88,8 @@
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 15px;
       align-items: center;
       justify-content: center;
     }
@@ -102,7 +99,8 @@
       border: 2px solid #ddd;
       border-radius: 50px;
       font-size: 1rem;
-      min-width: 200px;
+      width: 100%;
+      max-width: 300px;
     }
     
     input:focus, select:focus {
@@ -119,6 +117,8 @@
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s ease;
+      width: 100%;
+      max-width: 200px;
     }
     
     button:hover {
@@ -128,10 +128,11 @@
     }
     
     .large-button {
-      padding: 12px 25px;
-      font-size: 1.1rem;
+      padding: 12px 20px;
+      font-size: 1rem;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
     }
     
@@ -155,18 +156,23 @@
       background: #dc3545;
     }
     
+    .table-container {
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+    
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 20px 0;
       background: white;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      min-width: 600px;
     }
     
     th, td {
-      padding: 12px 15px;
+      padding: 10px 12px;
       text-align: left;
       border-bottom: 1px solid #ddd;
     }
@@ -175,6 +181,7 @@
       background: #1a2a6c;
       color: white;
       text-align: center;
+      white-space: nowrap;
     }
     
     tr:hover {
@@ -183,42 +190,43 @@
     
     .attendance-actions {
       display: flex;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 5px;
       justify-content: center;
     }
     
     .attendance-btn {
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
-      font-size: 0.9rem;
-      min-width: 60px;
+      font-size: 0.85rem;
+      min-width: 50px;
     }
     
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
     }
     
     .stat-card {
       background: white;
       border-radius: 8px;
-      padding: 15px;
+      padding: 12px;
       text-align: center;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       border-top: 4px solid #1a2a6c;
     }
     
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: #1a2a6c;
-      margin: 10px 0;
+      margin: 8px 0;
     }
     
     .stat-title {
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: #666;
     }
     
@@ -226,7 +234,7 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      padding: 15px 25px;
+      padding: 12px 20px;
       background: #4CAF50;
       color: white;
       border-radius: 8px;
@@ -234,6 +242,7 @@
       transform: translateX(100%);
       transition: transform 0.3s ease;
       z-index: 1000;
+      max-width: 300px;
     }
     
     .notification.show {
@@ -255,24 +264,24 @@
     
     .modal-content {
       background: white;
-      padding: 25px;
+      padding: 20px;
       border-radius: 10px;
       width: 90%;
-      max-width: 500px;
+      max-width: 400px;
       box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
     }
     
     .modal-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      font-size: 1.3rem;
+      margin-bottom: 15px;
       color: #1a2a6c;
       text-align: center;
     }
     
     .modal-input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
+      padding: 10px;
+      margin-bottom: 15px;
       border: 2px solid #ddd;
       border-radius: 8px;
       font-size: 1rem;
@@ -281,53 +290,91 @@
     .modal-buttons {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 10px;
     }
     
     footer {
       text-align: center;
-      padding: 20px;
+      padding: 15px;
       margin-top: 20px;
       color: white;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
     
     footer a {
       color: #fdbb2d;
       text-decoration: none;
-      margin: 0 10px;
+      margin: 0 8px;
     }
     
     footer a:hover {
       text-decoration: underline;
     }
     
-    @media (max-width: 768px) {
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 2rem;
+        padding: 0 100px;
+      }
+      
+      .content {
+        padding: 25px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
       .controls {
-        flex-direction: column;
-        align-items: stretch;
+        gap: 15px;
       }
       
       input, select {
-        width: 100%;
+        width: auto;
+      }
+      
+      button {
+        width: auto;
       }
       
       .attendance-actions {
-        flex-direction: column;
+        flex-wrap: nowrap;
       }
       
       .stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(4, 1fr);
       }
-      
+    }
+    
+    @media (max-width: 480px) {
       h1 {
-        padding: 0 40px;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+        padding: 0 60px 0 0;
       }
       
-      .title-control {
-        position: static;
-        margin-bottom: 10px;
+      .title-control button {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+      }
+      
+      .card-title {
+        font-size: 1.2rem;
+      }
+      
+      .large-button {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+      
+      th, td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+      }
+      
+      .attendance-btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        min-width: 40px;
       }
     }
   </style>
@@ -358,17 +405,19 @@
           <button onclick="addStudent()">Add Student</button>
         </div>
         
-        <table id="students-table">
-          <thead>
-            <tr>
-              <th>Student Name</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="students-container">
-            
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table id="students-table">
+            <thead>
+              <tr>
+                <th>Student Name</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="students-container">
+              
+            </tbody>
+          </table>
+        </div>
       </div>
       
       <div class="card">
@@ -380,19 +429,21 @@
           </select>
         </div>
         
-        <table id="attendance-table">
-          <thead>
-            <tr>
-              <th>Student Name</th>
-              <th>Morning</th>
-              <th>Evening</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="attendance-body">
-            
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table id="attendance-table">
+            <thead>
+              <tr>
+                <th>Student Name</th>
+                <th>Morning</th>
+                <th>Evening</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-body">
+              
+            </tbody>
+          </table>
+        </div>
         
         <div class="stats">
           <div class="stat-card">
@@ -407,7 +458,7 @@
             <div class="stat-title">Evening Present</div>
             <div class="stat-value" id="evening-present">0</div>
           </div>
-          
+        </div>
         
         <div class="controls" style="justify-content: center; margin-top: 20px;">
           <button class="large-button save" onclick="saveAttendance()">
@@ -424,16 +475,14 @@
     </div>
   </div>
 
-    <footer>
+  <footer>
     <p>This Attendance System is developed by <strong>AaDiTeCh</strong></p>
     <p>
-      Contact me for projects: 
-      <a href="https://instagram.com/@_alex_0775_" target="_blank">
+      Contact me for web development projects: 
+      <a href="https://www.instagram.com/your_instagram" target="_blank">
         <i class="fab fa-instagram"></i> Instagram
       </a> | 
-      <a href="https://www.linkedin.com/in/aditya-kumar-cse/"  target="_blank">
-        <i class="fab fa-linkedin-in"></i> Linkedin</a> | 
-      <a href="mailto:aaditya0775@gmail.com">
+      <a href="mailto:your.email@example.com">
         <i class="fas fa-envelope"></i> Email
       </a>
     </p>
@@ -592,14 +641,12 @@
       const dateKey = document.getElementById('attendance-date').value;
       let morningPresent = 0;
       let eveningPresent = 0;
-      let totalPresent = 0;
       let total = students.length;
       
       if (total === 0) {
         document.getElementById('total-students').textContent = '0';
         document.getElementById('morning-present').textContent = '0';
         document.getElementById('evening-present').textContent = '0';
-        document.getElementById('total-present').textContent = '0';
         return;
       }
       
@@ -608,7 +655,6 @@
           if (attendance[dateKey][student]) {
             if (attendance[dateKey][student].morning === true) morningPresent++;
             if (attendance[dateKey][student].evening === true) eveningPresent++;
-            if (attendance[dateKey][student].morning === true || attendance[dateKey][student].evening === true) totalPresent++;
           }
         });
       }
@@ -616,7 +662,6 @@
       document.getElementById('total-students').textContent = total;
       document.getElementById('morning-present').textContent = morningPresent;
       document.getElementById('evening-present').textContent = eveningPresent;
-      document.getElementById('total-present').textContent = totalPresent;
     }
     
     function setToday() {
@@ -681,89 +726,4 @@
         const studentAttendance = attendance[dateKey] && attendance[dateKey][student] ? 
           attendance[dateKey][student] : {morning: null, evening: null};
         
-        const morningStatus = studentAttendance.morning === true ? 
-          '<span class="present">Present</span>' : 
-          studentAttendance.morning === false ? 
-          '<span class="absent">Absent</span>' : 
-          '<span class="not-recorded">Not Recorded</span>';
-        
-        const eveningStatus = studentAttendance.evening === true ? 
-          '<span class="present">Present</span>' : 
-          studentAttendance.evening === false ? 
-          '<span class="absent">Absent</span>' : 
-          '<span class="not-recorded">Not Recorded</span>';
-        
-        htmlContent += `
-          <tr>
-            <td>${student}</td>
-            <td>${morningStatus}</td>
-            <td>${eveningStatus}</td>
-          </tr>
-        `;
-      });
-      
-   
-      // Create download link
-      const blob = new Blob([htmlContent], {type: 'application/vnd.ms-excel'});
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `attendance_${dateKey}.xls`);
-      document.body.appendChild(link);
-      
-      // Trigger download
-      link.click();
-      document.body.removeChild(link);
-      
-      showNotification('Data exported to Excel format!');
-    }
-    
-    function openTitleModal() {
-      document.getElementById('title-modal').style.display = 'flex';
-      document.getElementById('new-title').value = systemTitle;
-    }
-    
-    function closeTitleModal() {
-      document.getElementById('title-modal').style.display = 'none';
-    }
-    
-    function saveNewTitle() {
-      const newTitle = document.getElementById('new-title').value.trim();
-      if (newTitle) {
-        systemTitle = newTitle;
-        localStorage.setItem('systemTitle', systemTitle);
-        document.getElementById('header-title').textContent = systemTitle;
-        closeTitleModal();
-        showNotification('Title updated successfully!');
-      } else {
-        alert('Please enter a valid title.');
-      }
-    }
-    
-    function showNotification(message) {
-      const notification = document.getElementById('notification');
-      notification.textContent = message;
-      notification.classList.add('show');
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, 3000);
-    }
-
-    // Initialize the application
-    window.onload = init;
-    
-    // Event listeners
-    document.getElementById('attendance-date').addEventListener('change', function() {
-      renderAttendance();
-      updateStats();
-    });
-    
-    document.getElementById('new-student').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        addStudent();
-      }
-    });
-  </script>
-</body>
-</html>
+        const morningSt
