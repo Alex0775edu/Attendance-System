@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+8<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -726,4 +726,121 @@
         const studentAttendance = attendance[dateKey] && attendance[dateKey][student] ? 
           attendance[dateKey][student] : {morning: null, evening: null};
         
-        const morningSt
+         function exportToExcel() {
+      const dateKey = document.getElementById('attendance-date').value;
+      
+      if (!dateKey) {
+        alert('Please select a date first!');
+        return;
+      }
+      
+      // Create HTML table with styling for Excel
+      let htmlContent = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          td { mso-number-format:"\\@"; }
+          .header { font-size: 18px; font-weight: bold; color: #1a2a6c; background-color: #fdbb2d; padding: 10px; text-align: center; }
+          .subheader { font-size: 14px; font-weight: bold; color: #1a2a6c; background-color: #e6e6e6; padding: 8px; text-align: center; }
+          .column-header { font-weight: bold; text-align: center; background-color: #1a2a6c; color: white; padding: 5px; }
+          .present { color: #28a745; font-weight: bold; }
+          .absent { color: #dc3545; font-weight: bold; }
+          .not-recorded { color: #6c757d; }
+          .footer { font-size: 12px; margin-top: 20px; text-align: center; color: #6c757d; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <tr><td colspan="3" class="header">Attendance Record - ${systemTitle}</td></tr>
+          <tr><td colspan="3" class="subheader">Date: ${dateKey}</td></tr>
+          <tr>
+            <td class="column-header">Student Name</td>
+            <td class="column-header">Morning</td>
+            <td class="column-header">Evening</td>
+          </tr>
+      `;
+      
+      students.forEach(student => {
+        const studentAttendance = attendance[dateKey] && attendance[dateKey][student] ? 
+          attendance[dateKey][student] : {morning: null, evening: null};
+        
+        const morningStatus = studentAttendance.morning === true ? 
+          '<span class="present">Present</span>' : 
+          studentAttendance.morning === false ? 
+          '<span class="absent">Absent</span>' : 
+          '<span class="not-recorded">Not Recorded</span>';
+        
+        const eveningStatus = studentAttendance.evening === true ? 
+          '<span class="present">Present</span>' : 
+          studentAttendance.evening === false ? 
+          '<span class="absent">Absent</span>' : 
+          '<span class="not-recorded">Not Recorded</span>';
+        
+        htmlContent += `
+          <tr>
+            <td>${student}</td>
+            <td>${morningStatus}</td>
+            <td>${eveningStatus}</td>
+          </tr>
+        `;
+      });
+      
+      htmlContent += `
+          <tr><td colspan="3" class="footer">Exported on ${new Date().toLocaleString()}</td></tr>
+        </table>
+      </body>
+      </html>
+      `;
+      
+      // Create a blob and download link
+      const blob = new Blob([htmlContent], {type: 'application/vnd.ms-excel'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${dateKey}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showNotification('Attendance exported successfully!');
+    }
+    
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+    
+    function openTitleModal() {
+      document.getElementById('title-modal').style.display = 'flex';
+      document.getElementById('new-title').value = systemTitle;
+    }
+    
+    function closeTitleModal() {
+      document.getElementById('title-modal').style.display = 'none';
+    }
+    
+    function saveNewTitle() {
+      const newTitle = document.getElementById('new-title').value.trim();
+      if (newTitle) {
+        systemTitle = newTitle;
+        localStorage.setItem('systemTitle', systemTitle);
+        document.getElementById('header-title').textContent = systemTitle;
+        closeTitleModal();
+        showNotification('Title changed successfully!');
+      } else {
+        alert('Please enter a valid title.');
+      }
+    }
+
+    // Initialize the application when the page loads
+    window.onload = init;
+  </script>
+</body>
+</html>
