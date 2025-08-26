@@ -1,5 +1,4 @@
-
-     // ========== GLOBAL VARIABLES ==========
+   // ========== GLOBAL VARIABLES ==========
     let students = JSON.parse(localStorage.getItem('students')) || [];
     let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
     let currentDate = new Date();
@@ -84,6 +83,7 @@
     function logout() {
       auth.signOut().then(() => {
         showNotification('Logged out successfully!');
+        showLoginModal();
       }).catch((error) => {
         alert('Logout error: ' + error.message);
       });
@@ -99,10 +99,15 @@
         .then((querySnapshot) => {
           const firebaseStudents = [];
           querySnapshot.forEach((doc) => {
-            firebaseStudents.push(doc.data());
+            const data = doc.data();
+            // Keep only essential student data
+            firebaseStudents.push({
+              rollNo: data.rollNo,
+              name: data.name
+            });
           });
           
-          // Merge with local data
+          // Merge with local data only if Firebase has data
           if (firebaseStudents.length > 0) {
             students = firebaseStudents;
             localStorage.setItem('students', JSON.stringify(students));
@@ -124,9 +129,9 @@
             firebaseAttendance[data.date] = data.attendance;
           });
           
-          // Merge with local data
+          // Merge with local data only if Firebase has data
           if (Object.keys(firebaseAttendance).length > 0) {
-            attendance = {...attendance, ...firebaseAttendance};
+            attendance = firebaseAttendance;
             localStorage.setItem('attendance', JSON.stringify(attendance));
             renderAttendance();
             updateStats();
@@ -164,7 +169,8 @@
           students.forEach((student) => {
             const studentRef = studentsRef.doc();
             batch.set(studentRef, {
-              ...student,
+              rollNo: student.rollNo,
+              name: student.name,
               userId: userId,
               syncedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -178,6 +184,7 @@
         })
         .catch((error) => {
           console.error("Error syncing students:", error);
+          showNotification('Error syncing students: ' + error.message, true);
         });
     }
 
@@ -210,6 +217,7 @@
         })
         .catch((error) => {
           console.error("Error syncing attendance:", error);
+          showNotification('Error syncing attendance: ' + error.message, true);
         });
     }
 
@@ -310,12 +318,27 @@
 
     // Format date as YYYY-MM-DD
     function formatDate(date) {
-      return date.toISOString().split('T')[0];
+      const d = new Date(date);
+      let month = '' + (d.getMonth() + 1);
+      let day = '' + d.getDate();
+      const year = d.getFullYear();
+
+      if (month.length < 2) month = '0' + month;
+      if (day.length < 2) day = '0' + day;
+
+      return [year, month, day].join('-');
     }
     
     // Format time as HH:MM
     function formatTime(date) {
-      return date.toTimeString().substring(0, 5);
+      const d = new Date(date);
+      let hours = '' + d.getHours();
+      let minutes = '' + d.getMinutes();
+
+      if (hours.length < 2) hours = '0' + hours;
+      if (minutes.length < 2) minutes = '0' + minutes;
+
+      return [hours, minutes].join(':');
     }
     
     // Set current date and time
@@ -928,9 +951,15 @@
     }
 
     // ========== UI FUNCTIONS ==========
-    function showNotification(message) {
+    function showNotification(message, isError = false) {
       const notification = document.getElementById('notification');
       notification.textContent = message;
+      notification.className = 'notification';
+      
+      if (isError) {
+        notification.classList.add('error');
+      }
+      
       notification.classList.add('show');
       
       setTimeout(() => {
