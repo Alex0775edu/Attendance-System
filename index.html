@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance System - AaDiTeCh</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="connection-status" id="connection-status">
+    <i class="fas fa-wifi"></i> <span>Online</span>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="logo-container">
+        <div class="logo">A</div>
+        <h1 id="header-title">Attendance System - AaDiTeCh</h1>
+      </div>
+      <p class="app-description">Advanced attendance management system with offline support, time tracking, and export features</p>
+      
+      <div class="title-control">
+        <button onclick="openTitleModal()"><i class="fas fa-edit"></i> Change Title</button>
+        <button onclick="syncWithFirebase()" style="background: #28a745;">
+          <i class="fas fa-sync"></i> Sync
+        </button>
+        <button onclick="logout()" style="background: #dc3545;">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </header>
+    
+    <div class="content">
+      <div class="card">
+        <h2 class="card-title">Attendance Date & Time</h2>
+        <div class="controls">
+          <input type="date" id="attendance-date">
+          <input type="time" id="attendance-time">
+          <button onclick="setCurrentDateTime()">Current Time</button>
+          <button onclick="loadAttendanceForDate()">Load Attendance</button>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">Manage Students</h2>
+        <div class="student-form">
+          <label for="roll-number">Roll No:</label>
+          <input type="text" id="roll-number" placeholder="Enter roll number">
+          <label for="new-student">Name:</label>
+          <input type="text" id="new-student" placeholder="Enter student name">
+        </div>
+        <div class="controls">
+          <button onclick="addStudent()">Add Student</button>
+          <button onclick="openImportModal()">Import Students</button>
+          <button onclick="exportStudents()">Export Students</button>
+        </div>
+        
+        <div class="table-container">
+          <table id="students-table">
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Student Name</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="students-container">
+              
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">Mark Attendance</h2>
+        <div class="controls">
+          <select id="attendance-session">
+            <option value="morning">Morning Session</option>
+            <option value="evening">Evening Session</option>
+            <option value="full-day">Full Day</option>
+          </select>
+          <button onclick="markAllPresent()">Mark All Present</button>
+          <button onclick="markAllAbsent()">Mark All Absent</button>
+        </div>
+        
+        <div class="table-container">
+          <table id="attendance-table">
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Student Name</th>
+                <th>Morning</th>
+                <th>Evening</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-body">
+              
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-title">Total Students</div>
+            <div class="stat-value" id="total-students">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Morning Present</div>
+            <div class="stat-value" id="morning-present">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Evening Present</div>
+            <div class="stat-value" id="evening-present">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Overall %</div>
+            <div class="stat-value" id="attendance-percentage">0%</div>
+          </div>
+        </div>
+        
+        <div class="controls" style="justify-content: center; margin-top: 20px;">
+          <button class="large-button save" onclick="saveAttendance()">
+            <i class="fas fa-save"></i> Save Attendance
+          </button>
+          <button class="large-button reset" onclick="resetAttendance()">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+          <button class="large-button export" onclick="openExportModal()">
+            <i class="fas fa-download"></i> Export Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>This Attendance System is developed by <strong>AaDiTeCh</strong></p>
+    <p>
+      Contact me for projects: 
+      <a href="https://instagram.com/_alex_0775_" target="_blank">
+        <i class="fab fa-instagram"></i> Instagram
+      </a> | 
+      <a href="https://www.linkedin.com/in/aditya-kumar-cse/" target="_blank">
+        <i class="fab fa-linkedin-in"></i> Linkedin
+      </a> | 
+      <a href="mailto:aaditya0775@gmail.com">
+        <i class="fas fa-envelope"></i> Email
+      </a>
+    </p>
+  </footer>
+
+  <div class="notification" id="notification">
+    <!-- Notification content will be added here dynamically -->
+  </div>
+
+  <div class="modal" id="title-modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Change System Title</h2>
+      <input type="text" id="new-title" class="modal-input" placeholder="Enter new title">
+      <div class="modal-buttons">
+        <button onclick="saveNewTitle()">Save Title</button>
+        <button onclick="closeTitleModal()" style="background: #dc3545;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="import-modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Import Students</h2>
+      <p>Paste student data in format: RollNo,Name (one per line)</p>
+      <textarea id="import-data" class="modal-input" placeholder="101,John Doe&#10;102,Jane Smith" rows="6"></textarea>
+      <div class="modal-buttons">
+        <button onclick="importStudents()">Import</button>
+        <button onclick="closeImportModal()" style="background: #dc3545;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="export-modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Export Attendance Data</h2>
+      
+      <div class="date-range-selector">
+        <div class="range-option active" onclick="selectRange('day')">
+          <i class="fas fa-calendar-day"></i>
+          <h3>Single Day</h3>
+        </div>
+        
+        <div class="range-option" onclick="selectRange('week')">
+          <i class="fas fa-calendar-week"></i>
+          <h3>This Week</h3>
+        </div>
+        
+        <div class="range-option" onclick="selectRange('month')">
+          <i class="fas fa-calendar-alt"></i>
+          <h3>This Month</h3>
+        </div>
+        
+        <div class="range-option" onclick="selectRange('year')">
+          <i class="fas fa-calendar"></i>
+          <h3>This Year</h3>
+        </div>
+      </div>
+      
+      <div class="custom-range">
+        <div class="input-group">
+          <label for="start-date">From Date</label>
+          <input type="date" id="start-date">
+        </div>
+        
+        <div class="input-group">
+          <label for="end-date">To Date</label>
+          <input type="date" id="end-date">
+        </div>
+      </div>
+      
+      <div class="export-options">
+        <div class="option-card active" onclick="selectExportFormat('excel')">
+          <i class="fas fa-file-excel"></i>
+          <h3>Excel</h3>
+        </div>
+        
+        <div class="option-card" onclick="selectExportFormat('csv')">
+          <i class="fas fa-file-csv"></i>
+          <h3>CSV</h3>
+        </div>
+      </div>
+      
+      <div class="modal-buttons">
+        <button onclick="exportData()">Export Data</button>
+        <button onclick="closeExportModal()" style="background: #dc3545;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="login-modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Login to Attendance System</h2>
+      <div style="text-align: center; margin: 20px 0;">
+        <button id="google-signin-button" class="google-signin">
+          <i class="fab fa-google"></i> Sign in with Google
+        </button>
+      </div>
+      <div class="auth-divider">
+        <span>Or sign in with email</span>
+      </div>
+      <div class="input-group">
+        <label for="login-email">Email:</label>
+        <input type="email" id="login-email" class="modal-input" placeholder="Your email">
+      </div>
+      <div class="input-group">
+        <label for="login-password">Password:</label>
+        <input type="password" id="login-password" class="modal-input" placeholder="Your password">
+      </div>
+      <div class="modal-buttons">
+        <button onclick="login()">Login</button>
+        <button onclick="signup()">Sign Up</button>
+        <button onclick="closeLoginModal()" style="background: #dc3545;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+ 
+</body>
+</html>
