@@ -1,25 +1,23 @@
- // ========== GLOBAL VARIABLES ==========
-    let students = [];
-    let attendance = {};
+
+     // ========== GLOBAL VARIABLES ==========
+    let students = JSON.parse(localStorage.getItem('students')) || [];
+    let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
     let currentDate = new Date();
-    let systemTitle = 'Attendance System - AaDiTeCh';
+    let systemTitle = localStorage.getItem('systemTitle') || 'Attendance System - AaDiTeCh';
     let exportFormat = 'excel';
     let exportRange = 'day';
     let isOnline = true;
 
     // ========== FIREBASE CONFIGURATION ==========
-    // Replace with your Firebase configuration
-   const firebaseConfig = {
-  apiKey: "AIzaSyCCr4oeqoUb-343RgchKbfQllT5aFGhI4M",
-  authDomain: "attendance-aaditech.firebaseapp.com",
-  databaseURL: "https://attendance-aaditech-default-rtdb.firebaseio.com",
-  projectId: "attendance-aaditech",
-  storageBucket: "attendance-aaditech.firebasestorage.app",
-  messagingSenderId: "784396610079",
-  appId: "1:784396610079:web:51aa4ba500d41bc6e6c32a",
-  measurementId: "G-CHP37HGJ7S"
-};
-
+    const firebaseConfig = {
+     apiKey: "AIzaSyCCr4oeqoUb-343RgchKbfQllT5aFGhI4M",
+    authDomain: "attendance-aaditech.firebaseapp.com",
+    projectId: "attendance-aaditech",
+    storageBucket: "attendance-aaditech.firebasestorage.app",
+    messagingSenderId: "784396610079",
+    appId: "1:784396610079:web:51aa4ba500d41bc6e6c32a",
+    measurementId: "G-CHP37HGJ7S"
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -30,7 +28,6 @@
     // Firebase collections reference
     const studentsRef = db.collection("students");
     const attendanceRef = db.collection("attendance");
-    const userSettingsRef = db.collection("userSettings");
 
     // ========== AUTHENTICATION FUNCTIONS ==========
     function showLoginModal() {
@@ -50,7 +47,7 @@
         })
         .catch((error) => {
           console.error("Google sign-in error:", error);
-          showNotification('Google sign-in error: ' + error.message, true);
+          alert('Google sign-in error: ' + error.message);
         });
     }
 
@@ -65,7 +62,7 @@
           showNotification('Logged in successfully!');
         })
         .catch((error) => {
-          showNotification('Login error: ' + error.message, true);
+          alert('Login error: ' + error.message);
         });
     }
 
@@ -80,24 +77,15 @@
           showNotification('Account created successfully!');
         })
         .catch((error) => {
-          showNotification('Signup error: ' + error.message, true);
+          alert('Signup error: ' + error.message);
         });
     }
 
     function logout() {
       auth.signOut().then(() => {
         showNotification('Logged out successfully!');
-        // Clear local data
-        students = [];
-        attendance = {};
-        localStorage.removeItem('students');
-        localStorage.removeItem('attendance');
-        renderStudents();
-        renderAttendance();
-        updateStats();
-        showLoginModal();
       }).catch((error) => {
-        showNotification('Logout error: ' + error.message, true);
+        alert('Logout error: ' + error.message);
       });
     }
 
@@ -105,38 +93,16 @@
     function loadDataFromFirebase() {
       if (!auth.currentUser) return;
       
-      const userId = auth.currentUser.uid;
-      
-      // Load user settings first
-      userSettingsRef.doc(userId).get()
-        .then((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            if (data.systemTitle) {
-              systemTitle = data.systemTitle;
-              document.getElementById('header-title').textContent = systemTitle;
-            }
-          }
-        })
-        .catch((error) => {
-          console.log("Error getting user settings:", error);
-        });
-      
       // Load students from Firebase
-      studentsRef.where("userId", "==", userId)
+      studentsRef.where("userId", "==", auth.currentUser.uid)
         .get()
         .then((querySnapshot) => {
           const firebaseStudents = [];
           querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            // Keep only essential student data
-            firebaseStudents.push({
-              rollNo: data.rollNo,
-              name: data.name
-            });
+            firebaseStudents.push(doc.data());
           });
           
-          // Replace local data with Firebase data
+          // Merge with local data
           if (firebaseStudents.length > 0) {
             students = firebaseStudents;
             localStorage.setItem('students', JSON.stringify(students));
@@ -149,7 +115,7 @@
         });
       
       // Load attendance from Firebase
-      attendanceRef.where("userId", "==", userId)
+      attendanceRef.where("userId", "==", auth.currentUser.uid)
         .get()
         .then((querySnapshot) => {
           const firebaseAttendance = {};
@@ -158,9 +124,9 @@
             firebaseAttendance[data.date] = data.attendance;
           });
           
-          // Replace local data with Firebase data
+          // Merge with local data
           if (Object.keys(firebaseAttendance).length > 0) {
-            attendance = firebaseAttendance;
+            attendance = {...attendance, ...firebaseAttendance};
             localStorage.setItem('attendance', JSON.stringify(attendance));
             renderAttendance();
             updateStats();
@@ -198,8 +164,7 @@
           students.forEach((student) => {
             const studentRef = studentsRef.doc();
             batch.set(studentRef, {
-              rollNo: student.rollNo,
-              name: student.name,
+              ...student,
               userId: userId,
               syncedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -213,7 +178,6 @@
         })
         .catch((error) => {
           console.error("Error syncing students:", error);
-          showNotification('Error syncing students: ' + error.message, true);
         });
     }
 
@@ -246,32 +210,13 @@
         })
         .catch((error) => {
           console.error("Error syncing attendance:", error);
-          showNotification('Error syncing attendance: ' + error.message, true);
         });
-    }
-
-    function syncUserSettingsToFirebase() {
-      if (!auth.currentUser) return;
-      
-      const userId = auth.currentUser.uid;
-      
-      userSettingsRef.doc(userId).set({
-        systemTitle: systemTitle,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        console.log("User settings synced to Firebase");
-      })
-      .catch((error) => {
-        console.error("Error syncing user settings:", error);
-      });
     }
 
     function syncWithFirebase() {
       if (auth.currentUser) {
         syncStudentsToFirebase();
         syncAttendanceToFirebase();
-        syncUserSettingsToFirebase();
       } else {
         showLoginModal();
       }
@@ -324,27 +269,6 @@
         } else {
           // No user is signed in, show login modal after a short delay
           setTimeout(showLoginModal, 500);
-          
-          // Load from local storage if available
-          const localStudents = localStorage.getItem('students');
-          const localAttendance = localStorage.getItem('attendance');
-          const localTitle = localStorage.getItem('systemTitle');
-          
-          if (localStudents) {
-            students = JSON.parse(localStudents);
-            renderStudents();
-          }
-          
-          if (localAttendance) {
-            attendance = JSON.parse(localAttendance);
-            renderAttendance();
-            updateStats();
-          }
-          
-          if (localTitle) {
-            systemTitle = localTitle;
-            document.getElementById('header-title').textContent = systemTitle;
-          }
         }
       });
       
@@ -386,27 +310,12 @@
 
     // Format date as YYYY-MM-DD
     function formatDate(date) {
-      const d = new Date(date);
-      let month = '' + (d.getMonth() + 1);
-      let day = '' + d.getDate();
-      const year = d.getFullYear();
-
-      if (month.length < 2) month = '0' + month;
-      if (day.length < 2) day = '0' + day;
-
-      return [year, month, day].join('-');
+      return date.toISOString().split('T')[0];
     }
     
     // Format time as HH:MM
     function formatTime(date) {
-      const d = new Date(date);
-      let hours = '' + d.getHours();
-      let minutes = '' + d.getMinutes();
-
-      if (hours.length < 2) hours = '0' + hours;
-      if (minutes.length < 2) minutes = '0' + minutes;
-
-      return [hours, minutes].join(':');
+      return date.toTimeString().substring(0, 5);
     }
     
     // Set current date and time
@@ -1019,15 +928,9 @@
     }
 
     // ========== UI FUNCTIONS ==========
-    function showNotification(message, isError = false) {
+    function showNotification(message) {
       const notification = document.getElementById('notification');
       notification.textContent = message;
-      notification.className = 'notification';
-      
-      if (isError) {
-        notification.classList.add('error');
-      }
-      
       notification.classList.add('show');
       
       setTimeout(() => {
@@ -1050,12 +953,6 @@
         systemTitle = newTitle;
         localStorage.setItem('systemTitle', systemTitle);
         document.getElementById('header-title').textContent = systemTitle;
-        
-        // Sync to Firebase if user is logged in
-        if (auth.currentUser) {
-          syncUserSettingsToFirebase();
-        }
-        
         closeTitleModal();
         showNotification('Title changed successfully!');
       } else {
