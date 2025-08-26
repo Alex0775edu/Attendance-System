@@ -1,22 +1,25 @@
-   // ========== GLOBAL VARIABLES ==========
-    let students = JSON.parse(localStorage.getItem('students')) || [];
-    let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
+ // ========== GLOBAL VARIABLES ==========
+    let students = [];
+    let attendance = {};
     let currentDate = new Date();
-    let systemTitle = localStorage.getItem('systemTitle') || 'Attendance System - AaDiTeCh';
+    let systemTitle = 'Attendance System - AaDiTeCh';
     let exportFormat = 'excel';
     let exportRange = 'day';
     let isOnline = true;
 
     // ========== FIREBASE CONFIGURATION ==========
-    const firebaseConfig = {
-     apiKey: "AIzaSyCCr4oeqoUb-343RgchKbfQllT5aFGhI4M",
-    authDomain: "attendance-aaditech.firebaseapp.com",
-    projectId: "attendance-aaditech",
-    storageBucket: "attendance-aaditech.firebasestorage.app",
-    messagingSenderId: "784396610079",
-    appId: "1:784396610079:web:51aa4ba500d41bc6e6c32a",
-    measurementId: "G-CHP37HGJ7S"
-    };
+    // Replace with your Firebase configuration
+   const firebaseConfig = {
+  apiKey: "AIzaSyCCr4oeqoUb-343RgchKbfQllT5aFGhI4M",
+  authDomain: "attendance-aaditech.firebaseapp.com",
+  databaseURL: "https://attendance-aaditech-default-rtdb.firebaseio.com",
+  projectId: "attendance-aaditech",
+  storageBucket: "attendance-aaditech.firebasestorage.app",
+  messagingSenderId: "784396610079",
+  appId: "1:784396610079:web:51aa4ba500d41bc6e6c32a",
+  measurementId: "G-CHP37HGJ7S"
+};
+
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -27,6 +30,7 @@
     // Firebase collections reference
     const studentsRef = db.collection("students");
     const attendanceRef = db.collection("attendance");
+    const userSettingsRef = db.collection("userSettings");
 
     // ========== AUTHENTICATION FUNCTIONS ==========
     function showLoginModal() {
@@ -46,7 +50,7 @@
         })
         .catch((error) => {
           console.error("Google sign-in error:", error);
-          alert('Google sign-in error: ' + error.message);
+          showNotification('Google sign-in error: ' + error.message, true);
         });
     }
 
@@ -61,7 +65,7 @@
           showNotification('Logged in successfully!');
         })
         .catch((error) => {
-          alert('Login error: ' + error.message);
+          showNotification('Login error: ' + error.message, true);
         });
     }
 
@@ -76,16 +80,24 @@
           showNotification('Account created successfully!');
         })
         .catch((error) => {
-          alert('Signup error: ' + error.message);
+          showNotification('Signup error: ' + error.message, true);
         });
     }
 
     function logout() {
       auth.signOut().then(() => {
         showNotification('Logged out successfully!');
+        // Clear local data
+        students = [];
+        attendance = {};
+        localStorage.removeItem('students');
+        localStorage.removeItem('attendance');
+        renderStudents();
+        renderAttendance();
+        updateStats();
         showLoginModal();
       }).catch((error) => {
-        alert('Logout error: ' + error.message);
+        showNotification('Logout error: ' + error.message, true);
       });
     }
 
@@ -93,8 +105,25 @@
     function loadDataFromFirebase() {
       if (!auth.currentUser) return;
       
+      const userId = auth.currentUser.uid;
+      
+      // Load user settings first
+      userSettingsRef.doc(userId).get()
+        .then((doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.systemTitle) {
+              systemTitle = data.systemTitle;
+              document.getElementById('header-title').textContent = systemTitle;
+            }
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting user settings:", error);
+        });
+      
       // Load students from Firebase
-      studentsRef.where("userId", "==", auth.currentUser.uid)
+      studentsRef.where("userId", "==", userId)
         .get()
         .then((querySnapshot) => {
           const firebaseStudents = [];
@@ -107,7 +136,7 @@
             });
           });
           
-          // Merge with local data only if Firebase has data
+          // Replace local data with Firebase data
           if (firebaseStudents.length > 0) {
             students = firebaseStudents;
             localStorage.setItem('students', JSON.stringify(students));
@@ -120,7 +149,7 @@
         });
       
       // Load attendance from Firebase
-      attendanceRef.where("userId", "==", auth.currentUser.uid)
+      attendanceRef.where("userId", "==", userId)
         .get()
         .then((querySnapshot) => {
           const firebaseAttendance = {};
@@ -129,7 +158,7 @@
             firebaseAttendance[data.date] = data.attendance;
           });
           
-          // Merge with local data only if Firebase has data
+          // Replace local data with Firebase data
           if (Object.keys(firebaseAttendance).length > 0) {
             attendance = firebaseAttendance;
             localStorage.setItem('attendance', JSON.stringify(attendance));
@@ -221,10 +250,28 @@
         });
     }
 
+    function syncUserSettingsToFirebase() {
+      if (!auth.currentUser) return;
+      
+      const userId = auth.currentUser.uid;
+      
+      userSettingsRef.doc(userId).set({
+        systemTitle: systemTitle,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        console.log("User settings synced to Firebase");
+      })
+      .catch((error) => {
+        console.error("Error syncing user settings:", error);
+      });
+    }
+
     function syncWithFirebase() {
       if (auth.currentUser) {
         syncStudentsToFirebase();
         syncAttendanceToFirebase();
+        syncUserSettingsToFirebase();
       } else {
         showLoginModal();
       }
@@ -277,6 +324,27 @@
         } else {
           // No user is signed in, show login modal after a short delay
           setTimeout(showLoginModal, 500);
+          
+          // Load from local storage if available
+          const localStudents = localStorage.getItem('students');
+          const localAttendance = localStorage.getItem('attendance');
+          const localTitle = localStorage.getItem('systemTitle');
+          
+          if (localStudents) {
+            students = JSON.parse(localStudents);
+            renderStudents();
+          }
+          
+          if (localAttendance) {
+            attendance = JSON.parse(localAttendance);
+            renderAttendance();
+            updateStats();
+          }
+          
+          if (localTitle) {
+            systemTitle = localTitle;
+            document.getElementById('header-title').textContent = systemTitle;
+          }
         }
       });
       
@@ -982,6 +1050,12 @@
         systemTitle = newTitle;
         localStorage.setItem('systemTitle', systemTitle);
         document.getElementById('header-title').textContent = systemTitle;
+        
+        // Sync to Firebase if user is logged in
+        if (auth.currentUser) {
+          syncUserSettingsToFirebase();
+        }
+        
         closeTitleModal();
         showNotification('Title changed successfully!');
       } else {
