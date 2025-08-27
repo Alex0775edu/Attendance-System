@@ -842,22 +842,22 @@ th, td {
             <h2 class="modal-title">Export Attendance Data</h2>
             
             <div class="date-range-selector">
-                <div class="range-option active" onclick="selectRange('day')">
+                <div class="range-option active" onclick="selectRange(event, 'day')">
                     <i class="fas fa-calendar-day"></i>
                     <h3>Single Day</h3>
                 </div>
                 
-                <div class="range-option" onclick="selectRange('week')">
+                <div class="range-option" onclick="selectRange(event, 'week')">
                     <i class="fas fa-calendar-week"></i>
                     <h3>This Week</h3>
                 </div>
                 
-                <div class="range-option" onclick="selectRange('month')">
+                <div class="range-option" onclick="selectRange(event, 'month')">
                     <i class="fas fa-calendar-alt"></i>
                     <h3>This Month</h3>
                 </div>
                 
-                <div class="range-option" onclick="selectRange('year')">
+                <div class="range-option" onclick="selectRange(event, 'year')">
                     <i class="fas fa-calendar"></i>
                     <h3>This Year</h3>
                 </div>
@@ -876,12 +876,12 @@ th, td {
             </div>
             
             <div class="export-options">
-                <div class="option-card active" onclick="selectExportFormat('excel')">
+                <div class="option-card active" onclick="selectExportFormat(event, 'excel')">
                     <i class="fas fa-file-excel"></i>
                     <h3>Excel</h3>
                 </div>
                 
-                <div class="option-card" onclick="selectExportFormat('csv')">
+                <div class="option-card" onclick="selectExportFormat(event, 'csv')">
                     <i class="fas fa-file-csv"></i>
                     <h3>CSV</h3>
                 </div>
@@ -1564,7 +1564,7 @@ th, td {
             document.getElementById('export-modal').style.display = 'none';
         }
         
-        function selectRange(rangeType) {
+        function selectRange(event, rangeType) {
             // Remove active class from all options
             document.querySelectorAll('.range-option').forEach(option => {
                 option.classList.remove('active');
@@ -1610,7 +1610,7 @@ th, td {
             exportRange = rangeType;
         }
         
-        function selectExportFormat(format) {
+        function selectExportFormat(event, format) {
             // Remove active class from all options
             document.querySelectorAll('.option-card').forEach(option => {
                 option.classList.remove('active');
