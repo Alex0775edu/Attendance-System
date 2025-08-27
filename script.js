@@ -650,3 +650,4 @@ function exportToExcel(attendanceData, startDate, endDate) {
       setTimeout(() => {
         notification.classList.remove('show');
       }, 3000);
+    }
