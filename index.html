@@ -1612,9 +1612,119 @@
                 notification.classList.remove('show');
             }, 3000);
         }
+  // Import Students
+  function openImportModal() {
+    // Simple file input for CSV/Excel import
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        let importedStudents = [];
+        if (file.name.endsWith('.csv')) {
+          // Parse CSV
+          const lines = evt.target.result.split('\n');
+          for (let line of lines) {
+            const [rollNo, name] = line.split(',').map(x => x && x.trim());
+            if (rollNo && name && !students.some(s => s.rollNo === rollNo)) {
+              importedStudents.push({ rollNo, name });
+            }
+          }
+        } else {
+          // Parse Excel
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          for (let row of json) {
+            const [rollNo, name] = row;
+            if (rollNo && name && !students.some(s => s.rollNo === rollNo)) {
+              importedStudents.push({ rollNo: String(rollNo).trim(), name: String(name).trim() });
+            }
+          }
+        }
+        if (importedStudents.length > 0) {
+          students = students.concat(importedStudents);
+          saveUserData();
+          renderStudents();
+          renderAttendance();
+          updateStats();
+          showNotification(`${importedStudents.length} students imported successfully!`);
+        } else {
+          showNotification('No valid students found to import.', true);
+        }
+      };
+      if (file.name.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+    };
+    input.click();
+  }
 
+  // Export Students
+  function exportStudents() {
+    if (!students.length) {
+      showNotification('No students to export.', true);
+      return;
+    }
+    // Export as CSV
+    let csv = 'Roll No,Student Name\n';
+    students.forEach(s => {
+      csv += `"${s.rollNo}","${s.name}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "students.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification('Students exported successfully!');
+  }
+
+  // ========== POPUP FOR ONLINE/OFFLINE STATUS (3 seconds only) ==========
+  function updateConnectionStatus() {
+    const statusElement = document.getElementById('connection-status');
+    if (currentUser) {
+      statusElement.innerHTML = `<i class="fas fa-user"></i> <span>${currentUser.email}</span> | <i class="fas fa-wifi"></i> <span>Online</span>`;
+      statusElement.className = 'connection-status online';
+    } else {
+      statusElement.innerHTML = '<i class="fas fa-wifi"></i> <span>Online - Not Signed In</span>';
+      statusElement.className = 'connection-status online';
+    }
+    statusElement.style.display = 'flex';
+    setTimeout(() => {
+      statusElement.style.display = 'none';
+    }, 3000);
+  }
+
+  // Listen for online/offline events
+  window.addEventListener('online', () => {
+    document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> <span>Online</span>';
+    document.getElementById('connection-status').className = 'connection-status online';
+    document.getElementById('connection-status').style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('connection-status').style.display = 'none';
+    }, 3000);
+  });
+  window.addEventListener('offline', () => {
+    document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> <span>Offline</span>';
+    document.getElementById('connection-status').className = 'connection-status offline';
+    document.getElementById('connection-status').style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('connection-status').style.display = 'none';
+    }, 3000);
+  });
         // Initialize the application
         window.onload = init;
     </script>
 </body>
 </html>
+
