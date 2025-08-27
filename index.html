@@ -1722,9 +1722,12 @@
       document.getElementById('connection-status').style.display = 'none';
     }, 3000);
   });
+         students.sort((a, b) => a.rollNo.localeCompare(b.rollNo, undefined, {numeric: true, sensitivity: 'base'}));
+      
         // Initialize the application
         window.onload = init;
     </script>
 </body>
 </html>
+
 
