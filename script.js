@@ -539,3 +539,114 @@
 
         // Initialize the application
         window.onload = init;
+
+
+
+function exportToExcel(attendanceData, startDate, endDate) {
+     
+      let htmlContent = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          td { mso-number-format:"\\@"; }
+          .header { font-size: 18px; font-weight: bold; color: #1a2a6c; background-color: #fdbb2d; padding: 10px; text-align: center; }
+          .subheader { font-size: 14px; font-weight: bold; color: #1a2a6c; background-color: #e6e6e6; padding: 8px; text-align: center; }
+          .column-header { font-weight: bold; text-align: center; background-color: #1a2a6c; color: white; padding: 5px; }
+          .present { color: #28a745; font-weight: bold; }
+          .absent { color: #dc3545; font-weight: bold; }
+          .late { color: #ffc107; font-weight: bold; }
+          .not-recorded { color: #6c757d; }
+          .footer { font-size: 12px; margin-top: 20px; text-align: center; color: #6c757d; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <tr><td colspan="7" class="header">Attendance Record - ${systemTitle}</td></tr>
+          <tr><td colspan="7" class="subheader">Date Range: ${startDate} to ${endDate}</td></tr>
+          <tr>
+            <td class="column-header">Date</td>
+            <td class="column-header">Roll No</td>
+            <td class="column-header">Student Name</td>
+            <td class="column-header">Morning</td>
+            <td class="column-header">Time</td>
+            <td class="column-header">Evening</td>
+            <td class="column-header">Time</td>
+          </tr>
+      `;
+      
+      attendanceData.forEach(record => {
+        const morningStatus = record.morning === 'present' ? 
+          '<span class="present">Present</span>' : 
+          record.morning === 'absent' ? 
+          '<span class="absent">Absent</span>' : 
+          record.morning === 'late' ? 
+          '<span class="late">Late</span>' : 
+          '<span class="not-recorded">Not Recorded</span>';
+        
+        const eveningStatus = record.evening === 'present' ? 
+          '<span class="present">Present</span>' : 
+          record.evening === 'absent' ? 
+          '<span class="absent">Absent</span>' : 
+          record.evening === 'late' ? 
+          '<span class="late">Late</span>' : 
+          '<span class="not-recorded">Not Recorded</span>';
+        
+        htmlContent += `
+          <tr>
+            <td>${record.date}</td>
+            <td>${record.rollNo}</td>
+            <td>${record.name}</td>
+            <td>${morningStatus}</td>
+            <td>${record.morningTime || ''}</td>
+            <td>${eveningStatus}</td>
+            <td>${record.eveningTime || ''}</td>
+          </tr>
+        `;
+      });
+      
+      htmlContent += `
+          <tr><td colspan="7" class="footer">Exported on ${new Date().toLocaleString()}</td></tr>
+        </table>
+      </body>
+      </html>
+      `;
+     
+      const blob = new Blob([htmlContent], {type: 'application/vnd.ms-excel'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${startDate}_to_${endDate}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
+    function exportToCSV(attendanceData, startDate, endDate) {
+      let csvContent = "Date,Roll No,Student Name,Morning,Morning Time,Evening,Evening Time\n";
+      
+      attendanceData.forEach(record => {
+        csvContent += `"${record.date}","${record.rollNo}","${record.name}","${record.morning}","${record.morningTime || ''}","${record.evening}","${record.eveningTime || ''}"\n`;
+      });
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `attendance_${startDate}_to_${endDate}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+  
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
