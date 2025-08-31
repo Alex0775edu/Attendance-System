@@ -1,0 +1,25 @@
+{
+  "name": "AaDiTeCh-Attendance",
+  "short_name": "AaDiTeCh",
+  "description": "Advanced attendance management system by AaDiTeCh",
+  "theme_color": "#0D6EFD",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "Aaditech.jpeg",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "A.jpeg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "education"],
+  "lang": "en"
+}
