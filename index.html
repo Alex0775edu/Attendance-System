@@ -52,7 +52,7 @@
             margin-bottom: 10px;
         }
         
-        .logo {
+        .logo-placeholder {
             width: 50px;
             height: 50px;
             background: #fdbb2d;
@@ -63,6 +63,7 @@
             margin-right: 15px;
             font-weight: bold;
             font-size: 20px;
+            cursor: pointer;
         }
         
         .title-control {
@@ -328,16 +329,13 @@
             font-size: 1rem;
         }
         
-.modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-}
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
         
-        footer {
-            text-align: center;
-            padding: 15px;
         footer {
             text-align: center;
             padding: 15px;
@@ -351,6 +349,9 @@
             bottom: 0;
             z-index: 999;
         }
+        
+        footer a {
+            color: #fdbb2d;
             text-decoration: none;
             margin: 0 8px;
         }
@@ -561,7 +562,7 @@
                 text-align: center;
             }
             
-            .logo {
+            .logo-placeholder {
                 margin-right: 0;
                 margin-bottom: 10px;
             }
@@ -662,10 +663,12 @@
     <div class="container">
         <header>
             <div class="logo-container">
-                <div class="logo">A</div>
+                <div class="logo-placeholder" onclick="changeLogo()">
+                    <i class="fas fa-plus"></i>
+                </div>
                 <h1 id="header-title">Attendance System - AaDiTeCh</h1>
             </div>
-            <p class="app-description">Advanced attendance management system </p>
+            <p class="app-description">Advanced attendance management system</p>
             
             <div class="title-control">
                 <button onclick="openTitleModal()"><i class="fas fa-edit"></i> Change Title</button>
@@ -888,6 +891,21 @@
         </div>
     </div>
 
+    <!-- Title Change Modal -->
+    <div class="modal" id="title-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Change System Title</h2>
+            <div class="input-group">
+                <label for="new-title">New Title:</label>
+                <input type="text" id="new-title" class="modal-input" placeholder="Enter new title">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="changeTitle()">Change</button>
+                <button onclick="closeTitleModal()" style="background: #dc3545;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ========== GLOBAL VARIABLES ==========
         let students = [];
@@ -900,16 +918,15 @@
         let currentUser = null;
 
         // ========== FIREBASE CONFIGURATION ==========
-        // Replace with your Firebase configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCCr4oeqoUb-343RgchKbfQllT5aFGhI4M",
-  authDomain: "attendance-aaditech.firebaseapp.com",
-  databaseURL: "https://attendance-aaditech-default-rtdb.firebaseio.com",
-  projectId: "attendance-aaditech",
-  storageBucket: "attendance-aaditech.firebasestorage.app",
-  messagingSenderId: "784396610079",
-  appId: "1:784396610079:web:51aa4ba500d41bc6e6c32a",
-  measurementId: "G-CHP37HGJ7S"
+          authDomain: "attendance-aaditech.firebaseapp.com",
+          databaseURL: "https://attendance-aaditech-default-rtdb.firebaseio.com",
+          projectId: "attendance-aaditech",
+          storageBucket: "attendance-aaditech.firebasestorage.app",
+          messagingSenderId: "784396610079",
+          appId: "1:784396610079:web:51aa4ba500d41bc6e6c32a",
+          measurementId: "G-CHP37HGJ7S"
         };
 
         // Initialize Firebase
@@ -932,7 +949,6 @@
         function signInWithGoogle() {
             auth.signInWithPopup(googleProvider)
                 .then((result) => {
-                    // Google sign-in successful
                     currentUser = result.user;
                     closeLoginModal();
                     loadUserData();
@@ -950,14 +966,12 @@
             
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Signed in
                     currentUser = userCredential.user;
                     closeLoginModal();
                     loadUserData();
                     showNotification('Logged in successfully!');
                 })
                 .catch((error) => {
-                    // If login fails, try to create account instead
                     signup();
                 });
         }
@@ -968,11 +982,9 @@
             
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Signed up
                     currentUser = userCredential.user;
                     closeLoginModal();
                     
-                    // Initialize empty data for new user
                     students = [];
                     attendance = {};
                     
@@ -1008,7 +1020,6 @@
         function saveUserData() {
             if (!currentUser) return;
             
-            // Save data to Firebase Realtime Database
             const userData = {
                 students: students,
                 attendance: attendance,
@@ -1028,7 +1039,6 @@
         function loadUserData() {
             if (!currentUser) return;
             
-            // Load data from Firebase Realtime Database
             database.ref('users/' + currentUser.uid).once('value')
                 .then((snapshot) => {
                     const userData = snapshot.val();
@@ -1073,26 +1083,21 @@
         function init() {
             document.getElementById('header-title').textContent = systemTitle;
             
-            // Set current date and time
             setCurrentDateTime();
             
-            // Set up authentication state observer
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    // User is signed in
                     currentUser = user;
                     closeLoginModal();
                     loadUserData();
                     updateConnectionStatus();
                 } else {
-                    // No user is signed in
                     currentUser = null;
                     showLoginModal();
                     updateConnectionStatus();
                 }
             });
             
-            // Add Google Sign-In button listener
             document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
             
             renderStudents();
@@ -1111,6 +1116,11 @@
                 statusElement.innerHTML = '<i class="fas fa-wifi"></i> <span>Online - Not Signed In</span>';
                 statusElement.className = 'connection-status online';
             }
+            
+            statusElement.style.display = 'flex';
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
         }
 
         function setCurrentDateTime() {
@@ -1135,6 +1145,8 @@
                 document.getElementById('total-students').textContent = '0';
                 return;
             }
+            
+            students.sort((a, b) => a.rollNo.localeCompare(b.rollNo, undefined, {numeric: true, sensitivity: 'base'}));
             
             students.forEach((student, index) => {
                 const tr = document.createElement('tr');
@@ -1193,6 +1205,12 @@
         }
 
         // ========== ATTENDANCE MANAGEMENT ==========
+        function loadAttendanceForDate() {
+            renderAttendance();
+            updateStats();
+            showNotification('Attendance loaded for selected date');
+        }
+        
         function renderAttendance() {
             const container = document.getElementById('attendance-body');
             container.innerHTML = '';
@@ -1415,7 +1433,6 @@
         // ========== EXPORT FUNCTIONALITY ==========
         function openExportModal() {
             document.getElementById('export-modal').style.display = 'flex';
-            // Set default to current date
             selectRange('day');
         }
         
@@ -1424,15 +1441,12 @@
         }
         
         function selectRange(rangeType) {
-            // Remove active class from all options
             document.querySelectorAll('.range-option').forEach(option => {
                 option.classList.remove('active');
             });
             
-            // Add active class to clicked option
             event.currentTarget.classList.add('active');
             
-            // Calculate dates based on selection
             const today = new Date();
             let startDate, endDate;
             
@@ -1442,27 +1456,21 @@
                     endDate = today;
                     break;
                 case 'week':
-                    // Get the first day of the week (Sunday)
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - today.getDay());
                     endDate = new Date(today);
                     endDate.setDate(today.getDate() + (6 - today.getDay()));
                     break;
                 case 'month':
-                    // Get the first day of the month
                     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                    // Get the last day of the month
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                     break;
                 case 'year':
-                    // Get the first day of the year
                     startDate = new Date(today.getFullYear(), 0, 1);
-                    // Get the last day of the year
                     endDate = new Date(today.getFullYear(), 11, 31);
                     break;
             }
             
-            // Update date inputs
             document.getElementById('start-date').value = formatDate(startDate);
             document.getElementById('end-date').value = formatDate(endDate);
             
@@ -1470,12 +1478,10 @@
         }
         
         function selectExportFormat(format) {
-            // Remove active class from all options
             document.querySelectorAll('.option-card').forEach(option => {
                 option.classList.remove('active');
             });
             
-            // Add active class to clicked option
             event.currentTarget.classList.add('active');
             
             exportFormat = format;
@@ -1490,10 +1496,8 @@
                 return;
             }
             
-            // Get all dates in the range
             const dateArray = getDatesInRange(startDate, endDate);
             
-            // Collect all attendance data for the date range
             let attendanceData = [];
             dateArray.forEach(date => {
                 if (attendance[date]) {
@@ -1519,7 +1523,6 @@
                 return;
             }
             
-            // Export based on selected format
             if (exportFormat === 'excel') {
                 exportToExcel(attendanceData, startDate, endDate);
             } else if (exportFormat === 'csv') {
@@ -1556,7 +1559,6 @@
         }
         
         function exportToExcel(attendanceData, startDate, endDate) {
-            // Prepare data for Excel export
             const excelData = attendanceData.map(record => ({
                 'Date': record.date,
                 'Roll No': record.rollNo,
@@ -1567,14 +1569,10 @@
                 'Evening Time': record.eveningTime
             }));
             
-            // Create worksheet
             const worksheet = XLSX.utils.json_to_sheet(excelData);
-            
-            // Create workbook
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
             
-            // Generate Excel file
             XLSX.writeFile(workbook, `attendance_${startDate}_to_${endDate}.xlsx`);
         }
         
@@ -1612,122 +1610,140 @@
                 notification.classList.remove('show');
             }, 3000);
         }
-  // Import Students
-  function openImportModal() {
-    // Simple file input for CSV/Excel import
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        let importedStudents = [];
-        if (file.name.endsWith('.csv')) {
-          // Parse CSV
-          const lines = evt.target.result.split('\n');
-          for (let line of lines) {
-            const [rollNo, name] = line.split(',').map(x => x && x.trim());
-            if (rollNo && name && !students.some(s => s.rollNo === rollNo)) {
-              importedStudents.push({ rollNo, name });
-            }
-          }
-        } else {
-          // Parse Excel
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-          for (let row of json) {
-            const [rollNo, name] = row;
-            if (rollNo && name && !students.some(s => s.rollNo === rollNo)) {
-              importedStudents.push({ rollNo: String(rollNo).trim(), name: String(name).trim() });
-            }
-          }
+
+        // ========== TITLE CHANGE FUNCTIONS ==========
+        function openTitleModal() {
+            document.getElementById('new-title').value = systemTitle;
+            document.getElementById('title-modal').style.display = 'flex';
         }
-        if (importedStudents.length > 0) {
-          students = students.concat(importedStudents);
-          saveUserData();
-          renderStudents();
-          renderAttendance();
-          updateStats();
-          showNotification(`${importedStudents.length} students imported successfully!`);
-        } else {
-          showNotification('No valid students found to import.', true);
+        
+        function closeTitleModal() {
+            document.getElementById('title-modal').style.display = 'none';
         }
-      };
-      if (file.name.endsWith('.csv')) {
-        reader.readAsText(file);
-      } else {
-        reader.readAsArrayBuffer(file);
-      }
-    };
-    input.click();
-  }
+        
+        function changeTitle() {
+            const newTitle = document.getElementById('new-title').value.trim();
+            if (newTitle) {
+                systemTitle = newTitle;
+                document.getElementById('header-title').textContent = systemTitle;
+                saveUserData();
+                closeTitleModal();
+                showNotification('Title changed successfully!');
+            } else {
+                showNotification('Title cannot be empty!', true);
+            }
+        }
 
-  // Export Students
-  function exportStudents() {
-    if (!students.length) {
-      showNotification('No students to export.', true);
-      return;
-    }
-    // Export as CSV
-    let csv = 'Roll No,Student Name\n';
-    students.forEach(s => {
-      csv += `"${s.rollNo}","${s.name}"\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "students.csv");
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showNotification('Students exported successfully!');
-  }
+        // ========== LOGO CHANGE FUNCTION ==========
+        function changeLogo() {
+            const logoUrl = prompt("Enter the URL for your logo image:");
+            if (logoUrl) {
+                const logoPlaceholder = document.querySelector('.logo-placeholder');
+                logoPlaceholder.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = logoUrl;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                logoPlaceholder.appendChild(img);
+                showNotification('Logo updated successfully!');
+            }
+        }
 
-  // ========== POPUP FOR ONLINE/OFFLINE STATUS (3 seconds only) ==========
-  function updateConnectionStatus() {
-    const statusElement = document.getElementById('connection-status');
-    if (currentUser) {
-      statusElement.innerHTML = `<i class="fas fa-user"></i> <span>${currentUser.email}</span> | <i class="fas fa-wifi"></i> <span>Online</span>`;
-      statusElement.className = 'connection-status online';
-    } else {
-      statusElement.innerHTML = '<i class="fas fa-wifi"></i> <span>Online - Not Signed In</span>';
-      statusElement.className = 'connection-status online';
-    }
-    statusElement.style.display = 'flex';
-    setTimeout(() => {
-      statusElement.style.display = 'none';
-    }, 3000);
-  }
+        // ========== STUDENT IMPORT/EXPORT ==========
+        function openImportModal() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    let importedStudents = [];
+                    if (file.name.endsWith('.csv')) {
+                        const lines = evt.target.result.split('\n');
+                        for (let line of lines) {
+                            const [rollNo, name] = line.split(',').map(x => x && x.trim());
+                            if (rollNo && name && !students.some(s => s.rollNo === rollNo)) {
+                                importedStudents.push({ rollNo, name });
+                            }
+                        }
+                    } else {
+                        const data = new Uint8Array(evt.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                        for (let row of json) {
+                            const [rollNo, name] = row;
+                            if (rollNo && name && !students.some(s => s.rollNo === rollNo)) {
+                                importedStudents.push({ rollNo: String(rollNo).trim(), name: String(name).trim() });
+                            }
+                        }
+                    }
+                    if (importedStudents.length > 0) {
+                        students = students.concat(importedStudents);
+                        saveUserData();
+                        renderStudents();
+                        renderAttendance();
+                        updateStats();
+                        showNotification(`${importedStudents.length} students imported successfully!`);
+                    } else {
+                        showNotification('No valid students found to import.', true);
+                    }
+                };
+                if (file.name.endsWith('.csv')) {
+                    reader.readAsText(file);
+                } else {
+                    reader.readAsArrayBuffer(file);
+                }
+            };
+            input.click();
+        }
 
-  // Listen for online/offline events
-  window.addEventListener('online', () => {
-    document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> <span>Online</span>';
-    document.getElementById('connection-status').className = 'connection-status online';
-    document.getElementById('connection-status').style.display = 'flex';
-    setTimeout(() => {
-      document.getElementById('connection-status').style.display = 'none';
-    }, 3000);
-  });
-  window.addEventListener('offline', () => {
-    document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> <span>Offline</span>';
-    document.getElementById('connection-status').className = 'connection-status offline';
-    document.getElementById('connection-status').style.display = 'flex';
-    setTimeout(() => {
-      document.getElementById('connection-status').style.display = 'none';
-    }, 3000);
-  });
-         students.sort((a, b) => a.rollNo.localeCompare(b.rollNo, undefined, {numeric: true, sensitivity: 'base'}));
-      
+        function exportStudents() {
+            if (!students.length) {
+                showNotification('No students to export.', true);
+                return;
+            }
+            let csv = 'Roll No,Student Name\n';
+            students.forEach(s => {
+                csv += `"${s.rollNo}","${s.name}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "students.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('Students exported successfully!');
+        }
+
+        // ========== ONLINE/OFFLINE STATUS ==========
+        window.addEventListener('online', () => {
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> <span>Online</span>';
+            document.getElementById('connection-status').className = 'connection-status online';
+            document.getElementById('connection-status').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('connection-status').style.display = 'none';
+            }, 3000);
+        });
+        
+        window.addEventListener('offline', () => {
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> <span>Offline</span>';
+            document.getElementById('connection-status').className = 'connection-status offline';
+            document.getElementById('connection-status').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('connection-status').style.display = 'none';
+            }, 3000);
+        });
+
         // Initialize the application
         window.onload = init;
     </script>
 </body>
 </html>
-
-
