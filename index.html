@@ -638,6 +638,22 @@
             .search-button {
                 border-radius: 50px;
             }
+            
+            /* Mobile table styles */
+            .mobile-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+            }
+            
+            .attendance-actions {
+                flex-direction: column;
+            }
+            
+            .attendance-btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -705,6 +721,56 @@
             .stats {
                 grid-template-columns: 1fr 1fr;
             }
+            
+            /* Mobile specific adjustments */
+            .container {
+                border-radius: 10px;
+            }
+            
+            .card {
+                padding: 10px;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 100%;
+                font-size: 0.8rem;
+            }
+            
+            .attendance-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .attendance-btn {
+                padding: 3px 6px;
+                font-size: 0.7rem;
+                min-width: 30px;
+            }
+        }
+        
+        /* Print styles for export */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .title-control, .search-container, .notification {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -747,7 +813,15 @@
             
             <div class="card">
                 <h2 class="card-title">Manage Students</h2>
-              
+                
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="student-search" class="search-input" placeholder="Search students by name or roll number...">
+                        <button class="search-button" onclick="searchStudents()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
                 
                 <div class="student-form">
                     <label for="roll-number">Roll No:</label>
@@ -779,15 +853,16 @@
             
             <div class="card">
                 <h2 class="card-title">Mark Attendance</h2>
-                  
+                
                 <div class="search-container">
                     <div class="search-box">
-                        <input type="text" id="student-search" class="search-input" placeholder="Search students by name or roll number...">
-                        <button class="search-button" onclick="searchStudents()">
+                        <input type="text" id="attendance-search" class="search-input" placeholder="Search students in attendance...">
+                        <button class="search-button" onclick="searchAttendance()">
                             <i class="fas fa-search"></i> Search
                         </button>
                     </div>
                 </div>
+                
                 <div class="controls">
                     <select id="attendance-session">
                         <option value="morning">Morning Session</option>
@@ -951,6 +1026,11 @@
                 <div class="option-card" onclick="selectExportFormat('csv')">
                     <i class="fas fa-file-csv"></i>
                     <h3>CSV</h3>
+                </div>
+                
+                <div class="option-card" onclick="selectExportFormat('print')">
+                    <i class="fas fa-print"></i>
+                    <h3>Print</h3>
                 </div>
             </div>
             
@@ -1177,6 +1257,13 @@
                 }
             });
             
+            // Add event listener for attendance search input (Enter key)
+            document.getElementById('attendance-search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchAttendance();
+                }
+            });
+            
             renderStudents();
             renderAttendance();
             updateStats();
@@ -1312,6 +1399,76 @@
                     <td>
                         <button onclick="removeStudent(${originalIndex})">
                             <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </td>
+                `;
+                container.appendChild(tr);
+            });
+            
+            showNotification(`Found ${filteredStudents.length} student(s) matching your search`);
+        }
+        
+        function searchAttendance() {
+            const searchTerm = document.getElementById('attendance-search').value.toLowerCase().trim();
+            const dateKey = document.getElementById('attendance-date').value;
+            
+            if (!searchTerm) {
+                renderAttendance();
+                return;
+            }
+            
+            const container = document.getElementById('attendance-body');
+            container.innerHTML = '';
+            
+            if (students.length === 0) {
+                container.innerHTML = '<tr><td colspan="5" style="text-align: center;">Add students first to mark attendance</td></tr>';
+                return;
+            }
+            
+            const filteredStudents = students.filter(student => 
+                student.rollNo.toLowerCase().includes(searchTerm) || 
+                student.name.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredStudents.length === 0) {
+                container.innerHTML = '<tr><td colspan="5" style="text-align: center;">No students found matching your search.</td></tr>';
+                return;
+            }
+            
+            filteredStudents.forEach((student, index) => {
+                const studentAttendance = attendance[dateKey] && attendance[dateKey][student.rollNo] ? 
+                    attendance[dateKey][student.rollNo] : {morning: null, evening: null};
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${student.rollNo}</td>
+                    <td>${student.name}</td>
+                    <td style="text-align: center; background-color: ${getStatusColor(studentAttendance.morning)}">
+                        ${getStatusText(studentAttendance.morning)}
+                        ${studentAttendance.morningTime ? `<div class="time-display">${studentAttendance.morningTime}</div>` : ''}
+                    </td>
+                    <td style="text-align: center; background-color: ${getStatusColor(studentAttendance.evening)}">
+                        ${getStatusText(studentAttendance.evening)}
+                        ${studentAttendance.eveningTime ? `<div class="time-display">${studentAttendance.eveningTime}</div>` : ''}
+                    </td>
+                    <td class="attendance-actions">
+                        <button class="attendance-btn present" onclick="markAttendance(${students.findIndex(s => s.rollNo === student.rollNo)}, 'morning', 'present')">
+                            <i class="fas fa-check"></i> P
+                        </button>
+                        <button class="attendance-btn absent" onclick="markAttendance(${students.findIndex(s => s.rollNo === student.rollNo)}, 'morning', 'absent')">
+                            <i class="fas fa-times"></i> A
+                        </button>
+                        <button class="attendance-btn late" onclick="markAttendance(${students.findIndex(s => s.rollNo === student.rollNo)}, 'morning', 'late')">
+                            <i class="fas fa-clock"></i> L
+                        </button>
+                        <button class="attendance-btn present" onclick="markAttendance(${students.findIndex(s => s.rollNo === student.rollNo)}, 'evening', 'present')">
+                            <i class="fas fa-check"></i> P
+                        </button>
+                        <button class="attendance-btn absent" onclick="markAttendance(${students.findIndex(s => s.rollNo === student.rollNo)}, 'evening', 'absent')">
+                            <i class="fas fa-times"></i> A
+                        </button>
+                        <button class="attendance-btn late" onclick="markAttendance(${students.findIndex(s => s.rollNo === student.rollNo)}, 'evening', 'late')">
+                            <i class="fas fa-clock"></i> L
                         </button>
                     </td>
                 `;
@@ -1613,6 +1770,12 @@
                 return;
             }
             
+            if (exportFormat === 'print') {
+                window.print();
+                closeExportModal();
+                return;
+            }
+            
             const dateArray = getDatesInRange(startDate, endDate);
             
             let attendanceData = [];
@@ -1864,4 +2027,3 @@
     </script>
 </body>
 </html>
-
