@@ -1,4 +1,40 @@
- // ========== PWA FUNCTIONALITY ==========
+ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+
+const auth = getAuth();
+
+function signUpOrLogin(email, password) {
+  // Try to create new account
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      console.log("✅ Signup successful:", userCredential.user);
+      alert("Signup successful, logged in!");
+    })
+    .catch((error) => {
+      if (error.code === "auth/email-already-in-use") {
+        // If already registered, then login
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            console.log("✅ Login successful:", userCredential.user);
+            alert("Already registered, logged in!");
+          })
+          .catch((err) => {
+            console.error("❌ Login failed:", err.message);
+            alert("Login failed: " + err.message);
+          });
+      } else {
+        console.error("❌ Signup failed:", error.message);
+        alert("Signup failed: " + error.message);
+      }
+    });
+}
+
+// Example call:
+signUpOrLogin("test@example.com", "password123");
+
+
+
+
+// ========== PWA FUNCTIONALITY ==========
         // Register service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
