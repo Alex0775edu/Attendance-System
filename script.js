@@ -1,21 +1,4 @@
- import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-
-const auth = getAuth();
-
-function signUpOrLogin(email, password) {
-  // Try to create new account
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      console.log("✅ Signup successful:", userCredential.user);
-      alert("Signup successful, logged in!");
-    })
-    .catch((error) => {
-      if (error.code === "auth/email-already-in-use") {
-        // If already registered, then login
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            console.log("✅ Login successful:", userCr
-
+ 
 // ========== PWA FUNCTIONALITY ==========
         // Register service worker
         if ('serviceWorker' in navigator) {
