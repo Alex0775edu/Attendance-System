@@ -14,25 +14,7 @@ function signUpOrLogin(email, password) {
         // If already registered, then login
         signInWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-            console.log("✅ Login successful:", userCredential.user);
-            alert("Already registered, logged in!");
-          })
-          .catch((err) => {
-            console.error("❌ Login failed:", err.message);
-            alert("Login failed: " + err.message);
-          });
-      } else {
-        console.error("❌ Signup failed:", error.message);
-        alert("Signup failed: " + error.message);
-      }
-    });
-}
-
-// Example call:
-signUpOrLogin("test@example.com", "password123");
-
-
-
+            console.log("✅ Login successful:", userCr
 
 // ========== PWA FUNCTIONALITY ==========
         // Register service worker
