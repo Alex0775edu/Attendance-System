@@ -113,7 +113,7 @@
                     showNotification('Logged in successfully!');
                 })
                 .catch((error) => {
-                    signup();
+                   showNotification(error.message,true);
                 });
         }
 
@@ -1014,4 +1014,5 @@
         });
 
         // Initialize the application
+
         window.onload = init;
