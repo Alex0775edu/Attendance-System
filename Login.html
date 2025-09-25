@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AaDiTeCh-Attendance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-placeholder {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-dark {
+            background-color: var(--dark);
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .attendance-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .attendance-btn {
+            padding: 5px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .present {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .absent {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .time-display {
+            font-size: 10px;
+            color: #777;
+            margin-top: 3px;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .search-box button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .chart-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--dark);
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            align-items: center;
+            gap: 5px;
+            z-index: 1000;
+        }
+        
+        .connection-status.offline {
+            background: var(--danger);
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .login-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 15px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .attendance-actions {
+                flex-direction: column;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status -->
+    <div id="connection-status" class="connection-status">
+        <i class="fas fa-wifi"></i> <span>Online</span>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Login Section (shown by default) -->
+    <div id="login-section">
+        <div class="login-container">
+            <h2 class="login-title">AaDiTeCh-Attendance</h2>
+            <p>Sign in with your account to access the system</p>
+            
+            <div class="form-group">
+                <input type="email" id="login-email" placeholder="Email address">
+            </div>
+            <div class="form-group">
+                <input type="password" id="login-password" placeholder="Password">
+            </div>
+            
+            <button class="btn btn-primary" onclick="login()" style="width: 100%;">Login</button>
+            
+            <div style="margin: 20px 0; position: relative; text-align: center;">
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd;"></div>
+                <span style="background: white; padding: 0 10px; position: relative; z-index: 1;">Or</span>
+            </div>
+            
+            <button class="btn btn-primary" onclick=" signInWithGoogle()">
+                <i class="fab fa-google"></i> Sign in with Google
+            </button>
+            
+          
+        </div>
+    </div>
+
+    <!-- Teacher Full Access Panel -->
+    <div id="teacher-full-panel" class="container" style="display: none;">
+        <header>
+            <div class="logo-container">
+                <div class="logo-placeholder">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h1 class="header-title">Teacher Panel - Full Access</h1>
+            </div>
+            <div class="header-controls">
+                <span id="user-info" style="display: flex; align-items: center; gap: 10px;"></span>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-calendar-plus"></i> Mark Attendance</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="attendance-date">Date</label>
+                    <input type="date" id="attendance-date">
+                </div>
+                <div class="form-group">
+                    <label for="student-rollno">Student Roll No</label>
+                    <input type="text" id="student-rollno" placeholder="Enter roll number">
+                </div>
+                <div class="form-group">
+                    <label for="attendance-status">Status</label>
+                    <select id="attendance-status">
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-primary" onclick="markAttendance()">
+                        <i class="fas fa-check"></i> Mark Attendance
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-history"></i> Attendance History</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="view-date">View Date</label>
+                    <input type="date" id="view-date">
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-secondary" onclick="loadAttendanceForDate()">
+                        <i class="fas fa-search"></i> Load Attendance
+                    </button>
+                </div>
+            </div>
+            
+            <div id="attendance-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-body">
+                        <tr>
+                            <td colspan="3" style="text-align: center;">Select a date to view attendance</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher View Panel -->
+    <div id="teacher-view-panel" class="container" style="display: none;">
+        <header>
+            <div class="logo-container">
+                <div class="logo-placeholder">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h1 class="header-title">Teacher Panel - View Only</h1>
+            </div>
+            <div class="header-controls">
+                <span id="user-info-view" style="display: flex; align-items: center; gap: 10px;"></span>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-calendar-alt"></i> View Attendance</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="view-date-view">View Date</label>
+                    <input type="date" id="view-date-view">
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-secondary" onclick="loadAttendanceForDateView()">
+                        <i class="fas fa-search"></i> Load Attendance
+                    </button>
+                </div>
+            </div>
+            
+            <div id="attendance-table-container-view">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-body-view">
+                        <tr>
+                            <td colspan="2" style="text-align: center;">Select a date to view attendance</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Panel -->
+    <div id="student-panel" class="container" style="display: none;">
+        <header>
+            <div class="logo-container">
+                <div class="logo-placeholder">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h1 class="header-title">Student Panel</h1>
+            </div>
+            <div class="header-controls">
+                <span id="user-info-student" style="display: flex; align-items: center; gap: 10px;"></span>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Total Classes</div>
+                <div id="total-classes" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Present</div>
+                <div id="present-count" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Absent</div>
+                <div id="absent-count" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Attendance %</div>
+                <div id="attendance-percentage" class="stat-value">0%</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-chart-pie"></i> Attendance Overview</h2>
+            <div class="chart-container">
+                <canvas id="attendance-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-filter"></i> Filter Attendance</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="from-date">From Date</label>
+                    <input type="date" id="from-date">
+                </div>
+                <div class="form-group">
+                    <label for="to-date">To Date</label>
+                    <input type="date" id="to-date">
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-primary" onclick="filterAttendance()">
+                        <i class="fas fa-filter"></i> Apply Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-list"></i> Attendance Details</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="student-attendance-body">
+                    <tr>
+                        <td colspan="2" style="text-align: center;">Apply filter to view attendance</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+      
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+        // ========== GLOBAL VARIABLES ==========
+        let currentUser = null;
+        let userRole = null;
+        let userData = null;
+        let attendanceChart = null;
+
+        // ========== AUTHENTICATION FUNCTIONS ==========
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    currentUser = userCredential.user;
+                    checkUserRole();
+                })
+                .catch((error) => {
+                    showNotification('Login error: ' + error.message, true);
+                });
+        }
+
+        function signInWithGoogle() {
+            auth.signInWithPopup(googleProvider)
+                .then((result) => {
+                    currentUser = result.user;
+                    checkUserRole();
+                })
+                .catch((error) => {
+                    showNotification('Google sign-in error: ' + error.message, true);
+                });
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                currentUser = null;
+                userRole = null;
+                userData = null;
+                showLoginSection();
+                showNotification('Logged out successfully!');
+            }).catch((error) => {
+                showNotification('Logout error: ' + error.message, true);
+            });
+        }
+
+        function checkUserRole() {
+            if (!currentUser) return;
+            
+            db.collection('users').doc(currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        userData = doc.data();
+                        userRole = userData.role;
+                        redirectBasedOnRole();
+                    } else {
+                        // If user doesn't exist in users collection, create a student entry
+                        userRole = 'student';
+                        userData = {
+                            name: currentUser.displayName || currentUser.email.split('@')[0],
+                            role: 'student',
+                            roll_no: generateRollNumber()
+                        };
+                        
+                        db.collection('users').doc(currentUser.uid).set(userData)
+                            .then(() => {
+                                redirectBasedOnRole();
+                            })
+                            .catch((error) => {
+                                showNotification('Error creating user profile: ' + error.message, true);
+                            });
+                    }
+                })
+                .catch((error) => {
+                    showNotification('Error checking user role: ' + error.message, true);
+                });
+        }
+
+        function generateRollNumber() {
+            // Generate a simple roll number based on timestamp
+            return 'ST' + Date.now().toString().slice(-6);
+        }
+
+        function redirectBasedOnRole() {
+            showLoginSection(false);
+            
+            switch(userRole) {
+                case 'teacher_full':
+                    showTeacherFullPanel();
+                    break;
+                case 'teacher_view':
+                    showTeacherViewPanel();
+                    break;
+                case 'student':
+                    showStudentPanel();
+                    break;
+                default:
+                    showNotification('Unknown user role: ' + userRole, true);
+                    logout();
+            }
+            
+            updateUserInfo();
+            showNotification(`Welcome ${userData.name}! (${userRole})`);
+        }
+
+        // ========== UI MANAGEMENT FUNCTIONS ==========
+        function showLoginSection(show = true) {
+            document.getElementById('login-section').style.display = show ? 'block' : 'none';
+            document.getElementById('teacher-full-panel').style.display = 'none';
+            document.getElementById('teacher-view-panel').style.display = 'none';
+            document.getElementById('student-panel').style.display = 'none';
+        }
+
+        function showTeacherFullPanel() {
+            document.getElementById('teacher-full-panel').style.display = 'block';
+            setCurrentDate('attendance-date');
+            setCurrentDate('view-date');
+        }
+
+        function showTeacherViewPanel() {
+            document.getElementById('teacher-view-panel').style.display = 'block';
+            setCurrentDate('view-date-view');
+        }
+
+        function showStudentPanel() {
+            document.getElementById('student-panel').style.display = 'block';
+            setCurrentDate('from-date');
+            setCurrentDate('to-date');
+            loadStudentAttendance();
+        }
+
+        function updateUserInfo() {
+            const userInfoElement = document.getElementById('user-info') || 
+                                  document.getElementById('user-info-view') || 
+                                  document.getElementById('user-info-student');
+            
+            if (userInfoElement) {
+                userInfoElement.innerHTML = `
+                    <i class="fas fa-user"></i> 
+                    <span>${userData.name} (${userRole})</span>
+                `;
+            }
+        }
+
+        function setCurrentDate(elementId) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            
+            document.getElementById(elementId).value = `${year}-${month}-${day}`;
+        }
+
+        // ========== TEACHER FULL ACCESS FUNCTIONS ==========
+        function markAttendance() {
+            if (!currentUser || userRole !== 'teacher_full') {
+                showNotification('Access denied', true);
+                return;
+            }
+            
+            const date = document.getElementById('attendance-date').value;
+            const rollNo = document.getElementById('student-rollno').value.trim();
+            const status = document.getElementById('attendance-status').value;
+            
+            if (!date || !rollNo) {
+                showNotification('Please select a date and enter a roll number', true);
+                return;
+            }
+            
+            // Save to attendance collection (existing structure)
+            db.collection('attendance').doc(date).set({
+                [rollNo]: status
+            }, { merge: true })
+            .then(() => {
+                // Save to teacher_logs collection (new structure)
+                const logId = `${date}_${currentUser.uid}`;
+                return db.collection('teacher_logs').doc(logId).set({
+                    teacher_id: currentUser.uid,
+                    date: date,
+                    marked: {
+                        [rollNo]: status
+                    },
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            })
+            .then(() => {
+                showNotification(`Attendance marked for ${rollNo} on ${date}`);
+                document.getElementById('student-rollno').value = '';
+                loadAttendanceForDate(); // Refresh the table
+            })
+            .catch((error) => {
+                showNotification('Error marking attendance: ' + error.message, true);
+            });
+        }
+
+        function loadAttendanceForDate() {
+            const date = document.getElementById('view-date').value;
+            
+            if (!date) {
+                showNotification('Please select a date', true);
+                return;
+            }
+            
+            db.collection('attendance').doc(date).get()
+                .then((doc) => {
+                    const container = document.getElementById('attendance-body');
+                    container.innerHTML = '';
+                    
+                    if (!doc.exists) {
+                        container.innerHTML = '<tr><td colspan="3" style="text-align: center;">No attendance recorded for this date</td></tr>';
+                        return;
+                    }
+                    
+                    const attendanceData = doc.data();
+                    const rollNos = Object.keys(attendanceData);
+                    
+                    if (rollNos.length === 0) {
+                        container.innerHTML = '<tr><td colspan="3" style="text-align: center;">No attendance recorded for this date</td></tr>';
+                        return;
+                    }
+                    
+                    rollNos.forEach(rollNo => {
+                        const status = attendanceData[rollNo];
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${rollNo}</td>
+                            <td>${status}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="deleteAttendance('${date}', '${rollNo}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        `;
+                        container.appendChild(tr);
+                    });
+                })
+                .catch((error) => {
+                    showNotification('Error loading attendance: ' + error.message, true);
+                });
+        }
+
+        function deleteAttendance(date, rollNo) {
+            if (!confirm(`Are you sure you want to delete attendance for ${rollNo} on ${date}?`)) {
+                return;
+            }
+            
+            db.collection('attendance').doc(date).update({
+                [rollNo]: firebase.firestore.FieldValue.delete()
+            })
+            .then(() => {
+                showNotification(`Attendance deleted for ${rollNo} on ${date}`);
+                loadAttendanceForDate(); // Refresh the table
+            })
+            .catch((error) => {
+                showNotification('Error deleting attendance: ' + error.message, true);
+            });
+        }
+
+        // ========== TEACHER VIEW FUNCTIONS ==========
+        function loadAttendanceForDateView() {
+            const date = document.getElementById('view-date-view').value;
+            
+            if (!date) {
+                showNotification('Please select a date', true);
+                return;
+            }
+            
+            db.collection('attendance').doc(date).get()
+                .then((doc) => {
+                    const container = document.getElementById('attendance-body-view');
+                    container.innerHTML = '';
+                    
+                    if (!doc.exists) {
+                        container.innerHTML = '<tr><td colspan="2" style="text-align: center;">No attendance recorded for this date</td></tr>';
+                        return;
+                    }
+                    
+                    const attendanceData = doc.data();
+                    const rollNos = Object.keys(attendanceData);
+                    
+                    if (rollNos.length === 0) {
+                        container.innerHTML = '<tr><td colspan="2" style="text-align: center;">No attendance recorded for this date</td></tr>';
+                        return;
+                    }
+                    
+                    rollNos.forEach(rollNo => {
+                        const status = attendanceData[rollNo];
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${rollNo}</td>
+                            <td>${status}</td>
+                        `;
+                        container.appendChild(tr);
+                    });
+                })
+                .catch((error) => {
+                    showNotification('Error loading attendance: ' + error.message, true);
+                });
+        }
+
+        // ========== STUDENT FUNCTIONS ==========
+        function loadStudentAttendance() {
+            if (!currentUser || userRole !== 'student' || !userData.roll_no) {
+                showNotification('Student data not available', true);
+                return;
+            }
+            
+            const rollNo = userData.roll_no;
+            const fromDate = document.getElementById('from-date').value;
+            const toDate = document.getElementById('to-date').value;
+            
+            // Get all attendance documents between fromDate and toDate
+            db.collection('attendance')
+                .where(firebase.firestore.FieldPath.documentId(), '>=', fromDate)
+                .where(firebase.firestore.FieldPath.documentId(), '<=', toDate)
+                .get()
+                .then((querySnapshot) => {
+                    let totalClasses = 0;
+                    let presentCount = 0;
+                    let absentCount = 0;
+                    const attendanceDetails = [];
+                    
+                    querySnapshot.forEach((doc) => {
+                        const date = doc.id;
+                        const attendanceData = doc.data();
+                        
+                        if (attendanceData[rollNo]) {
+                            totalClasses++;
+                            const status = attendanceData[rollNo];
+                            
+                            if (status === 'present') {
+                                presentCount++;
+                            } else if (status === 'absent') {
+                                absentCount++;
+                            }
+                            
+                            attendanceDetails.push({
+                                date: date,
+                                status: status
+                            });
+                        }
+                    });
+                    
+                    // Update stats
+                    document.getElementById('total-classes').textContent = totalClasses;
+                    document.getElementById('present-count').textContent = presentCount;
+                    document.getElementById('absent-count').textContent = absentCount;
+                    
+                    const percentage = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 0;
+                    document.getElementById('attendance-percentage').textContent = `${percentage}%`;
+                    
+                    // Update chart
+                    updateAttendanceChart(presentCount, absentCount);
+                    
+                    // Update details table
+                    updateAttendanceDetails(attendanceDetails);
+                })
+                .catch((error) => {
+                    showNotification('Error loading student attendance: ' + error.message, true);
+                });
+        }
+
+        function filterAttendance() {
+            loadStudentAttendance();
+        }
+
+        function updateAttendanceChart(presentCount, absentCount) {
+            const ctx = document.getElementById('attendance-chart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (attendanceChart) {
+                attendanceChart.destroy();
+            }
+            
+            attendanceChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Present', 'Absent'],
+                    datasets: [{
+                        data: [presentCount, absentCount],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Attendance Distribution'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAttendanceDetails(attendanceDetails) {
+            const container = document.getElementById('student-attendance-body');
+            container.innerHTML = '';
+            
+            if (attendanceDetails.length === 0) {
+                container.innerHTML = '<tr><td colspan="2" style="text-align: center;">No attendance records found for the selected period</td></tr>';
+                return;
+            }
+            
+            attendanceDetails.sort((a, b) => b.date.localeCompare(a.date));
+            
+            attendanceDetails.forEach(record => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${record.status}</td>
+                `;
+                container.appendChild(tr);
+            });
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification';
+            
+            if (isError) {
+                notification.classList.add('error');
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
+        
+        // Add Enter key support for login
+        document.getElementById('login-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        // ========== INITIALIZATION ==========
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                checkUserRole();
+            } else {
+                currentUser = null;
+                userRole = null;
+                userData = null;
+                showLoginSection();
+            }
+        });
+
+        // Set current dates on page load
+        window.onload = function() {
+            setCurrentDate('attendance-date');
+            setCurrentDate('view-date');
+            setCurrentDate('view-date-view');
+            setCurrentDate('from-date');
+            setCurrentDate('to-date');
+        };
+    </script>
+</body>
+</html>
